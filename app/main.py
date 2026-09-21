@@ -4,7 +4,6 @@ import os
 import sys
 
 from openai import OpenAI
-from openai.types.chat import ChatCompletionMessageToolCall, ChatCompletionMessageToolCallUnion
 
 # internal imports
 from app.tools.read import Read
@@ -36,14 +35,15 @@ def main():
         tools=[Read.get_tool_param()],
     )
 
-    if not chat.choices or len(chat.choices) == 0:
+    if not chat.choices:
         raise RuntimeError("no choices in response")
 
     # You can use print statements as follows for debugging, they'll be visible when running tests.
     print("Logs from your program will appear here!", file=sys.stderr)
+    chat_message = chat.choices[0].message
 
-    if chat.choices[0].message.tool_calls:
-        for tool_call in chat.choices[0].message.tool_calls:
+    if chat_message .tool_calls:
+        for tool_call in chat_message.tool_calls:
             if tool_call.type == "function":
                 if tool_call.function.name == "Read":
                     read_args = json.loads(tool_call.function.arguments)

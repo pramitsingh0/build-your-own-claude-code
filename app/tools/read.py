@@ -9,7 +9,7 @@ class Read:
             with open(self.file_path, 'r') as file:
                 return file.read()
         except Exception as e:
-            return f"Error reading file: {e}"
+            raise e
 
     @staticmethod
     def get_tool_param() -> ChatCompletionFunctionToolParam:
