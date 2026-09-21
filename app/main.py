@@ -4,8 +4,15 @@ import sys
 
 from openai import OpenAI
 
-API_KEY = os.getenv("OPENROUTER_API_KEY")
-BASE_URL = os.getenv("OPENROUTER_BASE_URL", default="https://openrouter.ai/api/v1")
+# OpenRouter (what the CodeCrafters tester injects) takes priority; fall back to OpenAI locally.
+if os.getenv("OPENROUTER_API_KEY"):
+    API_KEY = os.getenv("OPENROUTER_API_KEY")
+    BASE_URL = os.getenv("OPENROUTER_BASE_URL", default="https://openrouter.ai/api/v1")
+    MODEL = os.getenv("OPENAI_MODEL", default="anthropic/claude-haiku-4.5")
+else:
+    API_KEY = os.getenv("OPENAI_API_KEY")
+    BASE_URL = os.getenv("OPENAI_BASE_URL", default="https://api.openai.com/v1")
+    MODEL = os.getenv("OPENAI_MODEL", default="gpt-4o-mini")
 
 
 def main():
@@ -14,12 +21,12 @@ def main():
     args = p.parse_args()
 
     if not API_KEY:
-        raise RuntimeError("OPENROUTER_API_KEY is not set")
+        raise RuntimeError("neither OPENROUTER_API_KEY nor OPENAI_API_KEY is set")
 
     client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
     chat = client.chat.completions.create(
-        model="anthropic/claude-haiku-4.5",
+        model=MODEL,
         messages=[{"role": "user", "content": args.p}],
     )
 
