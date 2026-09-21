@@ -6,6 +6,7 @@ import sys
 from openai import OpenAI
 
 # internal imports
+from app.services.tool_dispatcher import dispatch_read_tool
 from app.tools.read import Read
 
 # OpenRouter (what the CodeCrafters tester injects) takes priority; fall back to OpenAI locally.
@@ -46,10 +47,7 @@ def main():
         for tool_call in chat_message.tool_calls:
             if tool_call.type == "function":
                 if tool_call.function.name == "Read":
-                    read_args = json.loads(tool_call.function.arguments)
-                    file_path = read_args["file_path"]
-                    reader = Read(file_path)
-                    print(reader.execute())
+                    read_result = dispatch_read_tool(tool_call.function.name, tool_call.function.arguments)
     else:
         print(chat.choices[0].message.content)
 
