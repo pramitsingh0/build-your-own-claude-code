@@ -1,4 +1,5 @@
-read_tool = {
+from openai.types.chat import ChatCompletionFunctionToolParam
+read_tool: ChatCompletionFunctionToolParam = {
     "type": "function",
     "function": {
         "name": "Read",

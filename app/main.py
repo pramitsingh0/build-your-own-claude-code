@@ -5,6 +5,9 @@ import sys
 
 from openai import OpenAI
 
+# internal imports
+from app.tools.read import read_tool
+
 # OpenRouter (what the CodeCrafters tester injects) takes priority; fall back to OpenAI locally.
 if os.getenv("OPENROUTER_API_KEY"):
     API_KEY = os.getenv("OPENROUTER_API_KEY")
@@ -29,25 +32,7 @@ def main():
     chat = client.chat.completions.create(
         model=MODEL,
         messages=[{"role": "user", "content": args.p}],
-        tools=[
-            {
-                "type": "function",
-                "function": {
-                    "name": "Read",
-                    "description": "Read the contents of a file",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "file_path": {
-                                "type": "string",
-                                "description": "The path to the file to read",
-                            }
-                        },
-                        "required": ["file_path"],
-                    },
-                },
-            }
-        ],
+        tools=[read_tool],
     )
 
     if not chat.choices or len(chat.choices) == 0:
