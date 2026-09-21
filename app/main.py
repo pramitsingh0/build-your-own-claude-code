@@ -4,9 +4,10 @@ import os
 import sys
 
 from openai import OpenAI
+from openai.types.chat import ChatCompletionMessageToolCall, ChatCompletionMessageToolCallUnion
 
 # internal imports
-from app.tools.read import read_tool
+from app.tools.read import Read
 
 # OpenRouter (what the CodeCrafters tester injects) takes priority; fall back to OpenAI locally.
 if os.getenv("OPENROUTER_API_KEY"):
@@ -32,7 +33,7 @@ def main():
     chat = client.chat.completions.create(
         model=MODEL,
         messages=[{"role": "user", "content": args.p}],
-        tools=[read_tool],
+        tools=[Read.get_tool_param()],
     )
 
     if not chat.choices or len(chat.choices) == 0:
@@ -41,7 +42,17 @@ def main():
     # You can use print statements as follows for debugging, they'll be visible when running tests.
     print("Logs from your program will appear here!", file=sys.stderr)
 
-    print(chat.choices[0].message.content)
+    print(chat.choices[0].message)
+    if chat.choices[0].message.tool_calls:
+        for tool_call in chat.choices[0].message.tool_calls:
+            if tool_call.type == "function":
+                if tool_call.function.name == "Read":
+                    read_args = json.loads(tool_call.function.arguments)
+                    file_path = read_args["file_path"]
+                    reader = Read(file_path)
+                    print(reader.execute())
+    else:
+        print(chat.choices[0].message.content)
 
 
 if __name__ == "__main__":
