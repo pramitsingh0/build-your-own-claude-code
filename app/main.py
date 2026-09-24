@@ -2,8 +2,16 @@ import argparse
 import json
 import os
 import sys
+from typing import Iterable
 
 from openai import OpenAI
+from openai.types.chat import (
+    ChatCompletionAssistantMessageParam,
+    ChatCompletionMessage,
+    ChatCompletionMessageParam,
+    ChatCompletionToolMessageParam,
+    ChatCompletionUserMessageParam,
+)
 
 # internal imports
 from app.services.tool_dispatcher import dispatch_read_tool
@@ -29,27 +37,43 @@ def main():
         raise RuntimeError("neither OPENROUTER_API_KEY nor OPENAI_API_KEY is set")
 
     client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
+    messages: list[ChatCompletionMessageParam] = [{"role": "user", "content": args.p}]
 
-    chat = client.chat.completions.create(
-        model=MODEL,
-        messages=[{"role": "user", "content": args.p}],
-        tools=[Read.get_tool_param()],
-    )
+    while messages:
 
-    if not chat.choices:
-        raise RuntimeError("no choices in response")
+        chat = client.chat.completions.create(
+            model=MODEL,
+            messages=messages,
+            tools=[Read.get_tool_param()],
+        )
 
-    # You can use print statements as follows for debugging, they'll be visible when running tests.
-    print("Logs from your program will appear here!", file=sys.stderr)
-    chat_message = chat.choices[0].message
+        if not chat.choices:
+            raise RuntimeError("no choices in response")
 
-    if chat_message .tool_calls:
-        for tool_call in chat_message.tool_calls:
-            if tool_call.type == "function":
-                if tool_call.function.name == "Read":
-                    read_result = dispatch_read_tool(tool_call.function.name, tool_call.function.arguments)
-    else:
-        print(chat.choices[0].message.content)
+        assistant_message: ChatCompletionMessage = chat.choices[0].message
+
+        messages.append(
+            ChatCompletionAssistantMessageParam(
+                **assistant_message.model_dump(
+                    include={"role", "content", "tool_calls"}, exclude_unset=True
+                )
+            )
+        )
+
+        if not assistant_message.tool_calls:
+            print(chat.choices[0].message.content)
+            break
+        else:
+            for tool_call in assistant_message.tool_calls:
+                if tool_call.type == "function":
+                    if tool_call.function.name == "Read":
+                        read_result = dispatch_read_tool(tool_call.function.arguments)
+                        tool_result: ChatCompletionToolMessageParam = {
+                            "role": "tool",
+                            "tool_call_id": tool_call.id,
+                            "content": read_result,
+                        }
+                        messages.append(tool_result)
 
 
 if __name__ == "__main__":
