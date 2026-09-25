@@ -1,34 +1,21 @@
-[![progress-banner](https://backend.codecrafters.io/progress/claude-code/31673a1d-9c91-4718-86e5-1a283f1b48c6)](https://app.codecrafters.io/users/pramitsingh0?r=2qF)
+# CodeLoop
 
-This is a starting point for Python solutions to the
-["Build Your own Claude Code" Challenge](https://codecrafters.io/challenges/claude-code).
+A small Python coding agent built for the [CodeCrafters Build Your Own Claude Code challenge](https://codecrafters.io/challenges/claude-code). Give it a prompt, and it can read files, write files, and run shell commands.
 
-Claude Code is an AI coding assistant that uses Large Language Models (LLMs) to
-understand code and perform actions through tool calls. In this challenge,
-you'll build your own Claude Code from scratch by implementing an LLM-powered
-coding assistant.
+## How it works
 
-Along the way you'll learn about HTTP RESTful APIs, OpenAI-compatible tool
-calling, agent loop, and how to integrate multiple tools into an AI assistant.
+The model can request a tool, but the Python program performs the action. CodeLoop sends the result back to the model and keeps the messages in the conversation until the model gives a final answer. Conversation history lasts for one run; it is not saved between runs.
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+## Run
 
-# Passing the first stage
-
-The entry point for your `claude-code` implementation is in `app/main.py`. Study
-and uncomment the relevant code, and submit to pass the first stage:
+You need Python 3.14+, `uv`, and an `OPENAI_API_KEY` or `OPENROUTER_API_KEY` in your environment.
 
 ```sh
-codecrafters submit
+./your_program.sh -p "Summarize app/main.py"
 ```
 
-# Stage 2 & beyond
+Set `OPENAI_MODEL` to choose a different model.
 
-Note: This section is for stages 2 and beyond.
+## Tech stack
 
-1. Ensure you have `uv` installed locally.
-2. Run `./your_program.sh` to run your program, which is implemented in
-   `app/main.py`.
-3. Run `codecrafters submit` to submit your solution to CodeCrafters. Test
-   output will be streamed to your terminal.
+Python 3.14, OpenAI Python SDK, OpenAI or OpenRouter, and `uv`. The command-line interface and tools use Python's standard library.
