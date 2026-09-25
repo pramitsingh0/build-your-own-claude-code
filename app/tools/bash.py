@@ -1,3 +1,4 @@
+from openai.types.chat import ChatCompletionFunctionToolParam
 class Bash:
     def __init__(self):
         pass
@@ -7,7 +8,8 @@ class Bash:
         result = subprocess.run(command, shell=True, capture_output=True, text=True)
         return result.stdout, result.stderr, result.returncode
 
-    def get_tool_param(self) -> dict:
+    @staticmethod
+    def get_tool_param() -> ChatCompletionFunctionToolParam:
         return {
             "type": "function",
             "function": {
